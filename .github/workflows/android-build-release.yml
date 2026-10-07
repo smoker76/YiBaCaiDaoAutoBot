@@ -24,7 +24,7 @@ jobs:
 
       - name: Fix Android gesture callback
         run: |
-          sed -i 's/GestureDescription\.GestureResultCallback/AccessibilityService.GestureResultCallback/g' extracted/YiBaCaiDaoAutoBot-GitHubUpload/app/src/main/java/com/example/yibacaidaobot/automation/AutomationAccessibilityService.java
+          sed -i 's/GestureDescription\.GestureResultCallback/AccessibilityService.GestureResultCallback/g'             extracted/YiBaCaiDaoAutoBot-GitHubUpload/app/src/main/java/com/example/yibacaidaobot/automation/AutomationAccessibilityService.java
 
       - name: Set up JDK 17
         uses: actions/setup-java@v5
@@ -41,17 +41,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          STORE_PASS="$(openssl rand -hex 24)"
-          KEY_PASS="$(openssl rand -hex 24)"
+          PASS="$(openssl rand -hex 24)"
           KEY_ALIAS="yibacaidaobot"
 
-          keytool -genkeypair -v             -keystore "$RUNNER_TEMP/release.jks"             -storepass "$STORE_PASS"             -keypass "$KEY_PASS"             -alias "$KEY_ALIAS"             -keyalg RSA             -keysize 2048             -validity 10000             -dname "CN=Yi Ba Cai Dao Auto Bot, OU=Automation, O=Yi Ba Cai Dao, L=Singapore, S=Singapore, C=SG"
+          keytool -genkeypair -v             -keystore "$RUNNER_TEMP/release.p12"             -storetype PKCS12             -storepass "$PASS"             -keypass "$PASS"             -alias "$KEY_ALIAS"             -keyalg RSA             -keysize 2048             -validity 10000             -dname "CN=Yi Ba Cai Dao Auto Bot, OU=Automation, O=Yi Ba Cai Dao, L=Singapore, S=Singapore, C=SG"
 
           {
-            echo "RELEASE_STORE_FILE=$RUNNER_TEMP/release.jks"
-            echo "RELEASE_STORE_PASSWORD=$STORE_PASS"
+            echo "RELEASE_STORE_FILE=$RUNNER_TEMP/release.p12"
+            echo "RELEASE_STORE_PASSWORD=$PASS"
             echo "RELEASE_KEY_ALIAS=$KEY_ALIAS"
-            echo "RELEASE_KEY_PASSWORD=$KEY_PASS"
+            echo "RELEASE_KEY_PASSWORD=$PASS"
           } >> "$GITHUB_ENV"
 
       - name: Configure release signing
