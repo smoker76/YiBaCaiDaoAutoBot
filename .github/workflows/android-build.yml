@@ -22,6 +22,10 @@ jobs:
           unzip -q YiBaCaiDaoAutoBot-GitHubUpload.zip -d extracted
           find extracted -maxdepth 3 -type f | sort
 
+      - name: Fix Android gesture callback
+        run: |
+          sed -i 's/GestureDescription\.GestureResultCallback/AccessibilityService.GestureResultCallback/g' extracted/YiBaCaiDaoAutoBot-GitHubUpload/app/src/main/java/com/example/yibacaidaobot/automation/AutomationAccessibilityService.java
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
