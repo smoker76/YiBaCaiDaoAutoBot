@@ -1,4 +1,4 @@
-name: Build Signed Release APK
+name: Build Android 15 Compatible Release APK
 
 on:
   workflow_dispatch:
@@ -20,7 +20,15 @@ jobs:
       - name: Extract Android project
         run: |
           unzip -q YiBaCaiDaoAutoBot-GitHubUpload.zip -d extracted
-          find extracted -maxdepth 3 -type f | sort
+
+      - name: Patch SDK/package for modern Android install
+        shell: bash
+        run: |
+          set -euo pipefail
+          APP="extracted/YiBaCaiDaoAutoBot-GitHubUpload/app/build.gradle"
+          sed -i "s/compileSdk 34/compileSdk 35/" "$APP"
+          sed -i "s/targetSdk 34/targetSdk 35/" "$APP"
+          sed -i "s/applicationId 'com.example.yibacaidaobot'/applicationId 'com.example.yibacaidaobot.release'/" "$APP"
 
       - name: Fix Android gesture callback
         run: |
@@ -78,20 +86,19 @@ jobs:
           }
           EOF
 
-      - name: Build signed release APK
+      - name: Build release APK
         working-directory: extracted/YiBaCaiDaoAutoBot-GitHubUpload
         run: gradle --no-daemon clean assembleRelease
 
       - name: Verify APK
-        shell: bash
         run: |
           test -f extracted/YiBaCaiDaoAutoBot-GitHubUpload/app/build/outputs/apk/release/app-release.apk
           ls -lh extracted/YiBaCaiDaoAutoBot-GitHubUpload/app/build/outputs/apk/release/app-release.apk
 
-      - name: Upload signed APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: YiBaCaiDaoAutoBot-release-apk
+          name: YiBaCaiDaoAutoBot-Android15-release-apk
           path: extracted/YiBaCaiDaoAutoBot-GitHubUpload/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           
