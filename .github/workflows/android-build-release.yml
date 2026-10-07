@@ -21,6 +21,11 @@ jobs:
         run: |
           unzip -q YiBaCaiDaoAutoBot-GitHubUpload.zip -d extracted
 
+      - name: Fix accessibility service manifest
+        run: |
+          sed -i 's/android:exported="false" android:label="Yi Ba Cai Dao Auto Bot" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"/android:exported="true" android:label="Yi Ba Cai Dao Auto Bot" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"/' \
+            extracted/YiBaCaiDaoAutoBot-GitHubUpload/app/src/main/AndroidManifest.xml
+
       - name: Patch SDK/package for modern Android install
         shell: bash
         run: |
