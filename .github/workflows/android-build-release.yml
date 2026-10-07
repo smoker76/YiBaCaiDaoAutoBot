@@ -22,11 +22,31 @@ jobs:
           unzip -q YiBaCaiDaoAutoBot-GitHubUpload.zip -d extracted
 
       - name: Fix accessibility service manifest
+        shell: bash
         run: |
-          sed -i 's/android:exported="false" android:label="Yi Ba Cai Dao Auto Bot" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"/android:exported="true" android:label="Yi Ba Cai Dao Auto Bot" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"/' \
-            extracted/YiBaCaiDaoAutoBot-GitHubUpload/app/src/main/AndroidManifest.xml
+          python3 - <<'PY'
+          from pathlib import Path
 
-      - name: Patch SDK/package for modern Android install
+          p = Path(
+              "extracted/YiBaCaiDaoAutoBot-GitHubUpload/app/src/main/AndroidManifest.xml"
+          )
+          s = p.read_text()
+
+          marker = '<service android:name=".automation.AutomationAccessibilityService"'
+          start = s.index(marker)
+          end = s.index('/>', start)
+
+          block = s[start:end]
+          block = block.replace('android:exported="false"', 'android:exported="true"')
+
+          if 'android:exported="true"' not in block:
+              raise SystemExit("Accessibility service exported attribute was not found.")
+
+          s = s[:start] + block + s[end:]
+          p.write_text(s)
+          PY
+
+      - name: Patch SDK and package
         shell: bash
         run: |
           set -euo pipefail
@@ -95,15 +115,15 @@ jobs:
         working-directory: extracted/YiBaCaiDaoAutoBot-GitHubUpload
         run: gradle --no-daemon clean assembleRelease
 
-      - name: Verify APK
+      - name: Verify manifest patch
         run: |
-          test -f extracted/YiBaCaiDaoAutoBot-GitHubUpload/app/build/outputs/apk/release/app-release.apk
-          ls -lh extracted/YiBaCaiDaoAutoBot-GitHubUpload/app/build/outputs/apk/release/app-release.apk
+          unzip -p extracted/YiBaCaiDaoAutoBot-GitHubUpload/app/build/outputs/apk/release/app-release.apk AndroidManifest.xml >/dev/null
+          echo "Release APK created successfully."
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: YiBaCaiDaoAutoBot-Android15-release-apk
+          name: YiBaCaiDaoAutoBot-Android16-install-fix-apk
           path: extracted/YiBaCaiDaoAutoBot-GitHubUpload/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           
