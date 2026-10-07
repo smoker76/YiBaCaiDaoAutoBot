@@ -21,7 +21,12 @@ jobs:
         run: |
           unzip -q YiBaCaiDaoAutoBot-GitHubUpload.zip -d extracted
 
-      - name: Fix accessibility service manifest
+      - name: name: Fix accessibility service manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          MANIFEST="extracted/YiBaCaiDaoAutoBot-GitHubUpload/app/src/main/AndroidManifest.xml"
+          sed -i 's/android:exported="false"/android:exported="true"/g' "$MANIFEST"
         shell: bash
         run: |
           python3 - <<'PY'
